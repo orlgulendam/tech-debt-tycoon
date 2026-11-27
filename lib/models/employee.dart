@@ -67,15 +67,15 @@ class Employee {
   /// Avatar/ikon tanımlayıcısı. Aşama 3'te tema katmanı bunu bir ikona eşler.
   final String iconId;
 
-  /// Çalışanın her hafta otomatik uygulanan pasif etkisi.
+  /// Çalışanın her hafta duruma uygulanan pasif etkisi.
   ///
-  /// Maaş bütçeden gider, gelir katkısı haftalık gelire eklenir.
-  GameEffect get passiveEffect => GameEffect(
-    budgetDelta: -weeklySalary,
-    revenueDelta: revenueContribution,
-    techDebtDelta: techDebtEffect,
-    moraleDelta: moraleEffect,
-  );
+  /// **Yalnızca teknik borç ve moral içerir.** Maaş ve gelir katkısı
+  /// bilinçli olarak burada yok: [GameEffect.revenueDelta] kalıcı bir
+  /// haftalık gelir artışı anlamına geliyor, oysa bir çalışanın katkısı her
+  /// hafta yeniden *hesaplanır*, birikmez. Nakit tarafı
+  /// [GameState.netWeeklyCashFlow] üzerinden işlenir.
+  GameEffect get weeklyDebtMoraleEffect =>
+      GameEffect(techDebtDelta: techDebtEffect, moraleDelta: moraleEffect);
 
   /// Çalışanın haftalık net katkısı ($). Negatifse şirkete yük bindiriyor.
   int get netWeeklyValue => revenueContribution - weeklySalary;

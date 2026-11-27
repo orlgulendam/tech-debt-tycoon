@@ -79,12 +79,14 @@ void main() {
       iconId: 'senior',
     );
 
-    test('pasif efekt maaşı gider, gelir katkısını gelir olarak yazar', () {
-      final effect = employee.passiveEffect;
-      expect(effect.budgetDelta, -2600);
-      expect(effect.revenueDelta, 2000);
+    test('haftalık pasif etki yalnızca borç ve morali kapsar', () {
+      // Nakit tarafi bilincli olarak burada yok: gelir katkisi her hafta
+      // yeniden hesaplanir, kalici bir haftalik gelir artisi degildir.
+      final effect = employee.weeklyDebtMoraleEffect;
       expect(effect.techDebtDelta, -2);
       expect(effect.moraleDelta, 2);
+      expect(effect.budgetDelta, 0);
+      expect(effect.revenueDelta, 0);
     });
 
     test('netWeeklyValue gelir eksi maaştır', () {
@@ -157,8 +159,11 @@ void main() {
       expect(state.totalTeamRevenue, 1850);
       // 2000 (temel gelir) + 1850 (ekip) - 3100 (maaşlar)
       expect(state.netWeeklyCashFlow, 750);
-      expect(state.teamPassiveEffect.techDebtDelta, -1);
-      expect(state.teamPassiveEffect.moraleDelta, 2);
+      expect(state.teamDebtMoraleEffect.techDebtDelta, -1);
+      expect(state.teamDebtMoraleEffect.moraleDelta, 2);
+      // Ekip nakit akisi ayri hesaplanir, pasif etkiye karismaz.
+      expect(state.teamDebtMoraleEffect.budgetDelta, 0);
+      expect(state.teamDebtMoraleEffect.revenueDelta, 0);
       expect(state.hasTeam, isTrue);
     });
 

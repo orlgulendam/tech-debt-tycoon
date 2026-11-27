@@ -4,6 +4,7 @@
 /// yazarak hepsine erişir.
 library;
 
+export 'career_stats.dart';
 export 'character.dart';
 export 'employee.dart';
 export 'event_card.dart';
@@ -15,3 +16,4 @@ export 'game_state.dart';
 export 'glossary_term.dart';
 export 'hint_result.dart';
 export 'model_utils.dart';
+export 'sprint_result.dart';

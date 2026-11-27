@@ -44,6 +44,8 @@ class GameState {
     this.usedFreeHints = 0,
     this.hiredConsultants = 0,
     this.team = const [],
+    this.pendingEventId,
+    this.seenEventIds = const [],
   });
 
   // --- Oyun dengesi sabitleri -------------------------------------------
@@ -82,8 +84,14 @@ class GameState {
   /// Bütçenin "düşük" sayıldığı eşik ($).
   static const int lowBudgetThreshold = 5000;
 
-  /// Kayıt şeması sürümü. İleride alan eklenirse göç için kullanılacak.
-  static const int schemaVersion = 1;
+  /// Kayıt şeması sürümü.
+  ///
+  /// Sürüm geçmişi:
+  /// * 1 — ilk şema (Aşama 1).
+  /// * 2 — `pendingEventId` ve `seenEventIds` eklendi (Aşama 2). Ekleme
+  ///   geriye dönük uyumlu: alanlar eksikken [fromJson] güvenli
+  ///   varsayılanlara düştüğü için v1 kayıtları göç gerektirmeden okunur.
+  static const int schemaVersion = 2;
 
   // --- Durum alanları ----------------------------------------------------
 
@@ -123,6 +131,17 @@ class GameState {
   /// Ekipteki çalışanlar.
   final List<Employee> team;
 
+  /// Oyuncunun henüz karar vermediği olay kartının kimliği.
+  ///
+  /// Kayda yazıldığı için oyuncu olay kartı açıkken uygulamayı kapatsa bile
+  /// açtığında aynı kararla karşılaşır.
+  final String? pendingEventId;
+
+  /// Bu oyunda daha önce görülmüş olay kartlarının kimlikleri.
+  ///
+  /// Motor önce görülmemiş kartları seçer; havuz tükenirse baştan başlar.
+  final List<String> seenEventIds;
+
   // --- Türetilmiş değerler ----------------------------------------------
 
   /// Ekibin toplam haftalık maaş yükü ($).
@@ -138,10 +157,13 @@ class GameState {
   /// Negatifse şirket her hafta para kaybediyor.
   int get netWeeklyCashFlow => weeklyRevenue + totalTeamRevenue - totalSalaries;
 
-  /// Ekibin toplam pasif etkisi (maaş, gelir, borç, moral bir arada).
-  GameEffect get teamPassiveEffect => team.fold(
+  /// Ekibin her hafta duruma uygulanan toplam borç ve moral etkisi.
+  ///
+  /// Nakit tarafı burada değil [netWeeklyCashFlow] içinde; bkz.
+  /// [Employee.weeklyDebtMoraleEffect].
+  GameEffect get teamDebtMoraleEffect => team.fold(
     GameEffect.none,
-    (total, employee) => total + employee.passiveEffect,
+    (total, employee) => total + employee.weeklyDebtMoraleEffect,
   );
 
   /// Unicorn hedefine ilerleme (0.0 - 1.0 arası).
@@ -162,6 +184,9 @@ class GameState {
 
   /// Ekip boş mu? (Oyun tek başına CTO olarak başlar.)
   bool get hasTeam => team.isNotEmpty;
+
+  /// Karar verilmesi beklenen bir olay kartı var mı?
+  bool get hasPendingEvent => pendingEventId != null;
 
   // --- Yardımcılar -------------------------------------------------------
 
@@ -200,6 +225,9 @@ class GameState {
     int? usedFreeHints,
     int? hiredConsultants,
     List<Employee>? team,
+    String? pendingEventId,
+    bool clearPendingEvent = false,
+    List<String>? seenEventIds,
   }) => GameState(
     week: week ?? this.week,
     budget: budget ?? this.budget,
@@ -213,6 +241,10 @@ class GameState {
     usedFreeHints: usedFreeHints ?? this.usedFreeHints,
     hiredConsultants: hiredConsultants ?? this.hiredConsultants,
     team: team ?? this.team,
+    pendingEventId: clearPendingEvent
+        ? null
+        : (pendingEventId ?? this.pendingEventId),
+    seenEventIds: seenEventIds ?? this.seenEventIds,
   );
 
   Map<String, dynamic> toJson() => {
@@ -229,10 +261,13 @@ class GameState {
     'usedFreeHints': usedFreeHints,
     'hiredConsultants': hiredConsultants,
     'team': team.map((employee) => employee.toJson()).toList(),
+    'pendingEventId': pendingEventId,
+    'seenEventIds': seenEventIds,
   };
 
   factory GameState.fromJson(Map<String, dynamic> json) {
     final rawTeam = json['team'];
+    final rawSeen = json['seenEventIds'];
     return GameState(
       week: readInt(json['week'], fallback: 1),
       budget: readInt(json['budget'], fallback: initialBudget),
@@ -264,6 +299,10 @@ class GameState {
                 .map((raw) => Employee.fromJson(Map<String, dynamic>.from(raw)))
                 .toList(growable: false)
           : const [],
+      pendingEventId: json['pendingEventId'] as String?,
+      seenEventIds: rawSeen is List
+          ? rawSeen.whereType<String>().toList(growable: false)
+          : const [],
     );
   }
 
@@ -281,7 +320,9 @@ class GameState {
       other.resolvedCrises == resolvedCrises &&
       other.usedFreeHints == usedFreeHints &&
       other.hiredConsultants == hiredConsultants &&
-      listEquals(other.team, team);
+      other.pendingEventId == pendingEventId &&
+      listEquals(other.team, team) &&
+      listEquals(other.seenEventIds, seenEventIds);
 
   @override
   int get hashCode => Object.hash(
@@ -296,7 +337,9 @@ class GameState {
     resolvedCrises,
     usedFreeHints,
     hiredConsultants,
+    pendingEventId,
     listHash(team),
+    listHash(seenEventIds),
   );
 
   @override

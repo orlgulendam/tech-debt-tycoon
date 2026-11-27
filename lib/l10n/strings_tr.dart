@@ -21,10 +21,11 @@ const Map<StringKey, String> kStringsTr = {
   StringKey.metricBudget: 'Bütçe',
   StringKey.metricValuation: 'Değerleme',
   StringKey.metricWeeklyRevenue: 'Haftalık Gelir',
+  StringKey.metricWeeklyRevenueShort: 'Gelir',
   StringKey.metricTechDebt: 'Teknik Borç',
   StringKey.metricTeamMorale: 'Ekip Morali',
   StringKey.metricWeek: 'Hafta',
-  StringKey.metricTeamSize: 'Ekip',
+  StringKey.metricTeamSize: 'Kadro',
   StringKey.metricNetCashFlow: 'Net Nakit Akışı',
 
   // --- Ofis ekranı ---
@@ -120,6 +121,7 @@ const Map<StringKey, String> kStringsTr = {
   StringKey.teamDebtEffectLabel: 'Teknik borç etkisi',
   StringKey.teamMoraleEffectLabel: 'Moral etkisi',
   StringKey.teamNetValueLabel: 'Haftalık net',
+  StringKey.teamPassiveEffectLabel: 'Haftalık pasif etki',
   StringKey.teamInsufficientBudget: 'Bütçe yetmiyor. Maaş bordrosu şaka değil.',
   StringKey.teamHiredMessage: '{name} ekibe katıldı. Hoş gelsin!',
 

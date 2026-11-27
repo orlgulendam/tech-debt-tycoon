@@ -22,6 +22,9 @@ enum StringKey {
   metricBudget,
   metricValuation,
   metricWeeklyRevenue,
+
+  /// Dar alanlarda (metrik kutusu) kullanılan kısa biçim.
+  metricWeeklyRevenueShort,
   metricTechDebt,
   metricTeamMorale,
   metricWeek,
@@ -95,6 +98,7 @@ enum StringKey {
   teamDebtEffectLabel,
   teamMoraleEffectLabel,
   teamNetValueLabel,
+  teamPassiveEffectLabel,
   teamInsufficientBudget,
   teamHiredMessage,
 

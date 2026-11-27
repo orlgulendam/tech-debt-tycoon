@@ -20,7 +20,13 @@ dependencies:
   # iOS tarzı ikonlar (platforma özel ufak dokunuşlar için).
   cupertino_icons: ^1.0.9
 
-  # Durum yönetimi. Aşama 2'de oyun motoru ve bütün provider'lar bunun üzerine kurulacak.
+  # Durum yönetimi.
+  #
+  # İki paket bilinçli olarak ayrı: `lib/providers/` saf Dart `riverpod`
+  # kullanıyor (Flutter importu yok), yalnızca widget'lar
+  # `flutter_riverpod`'a dokunuyor. Böylece bütün provider ve oyun mantığı
+  # `dart test` ile motor başlatılmadan test edilebiliyor.
+  riverpod: ^3.5.0
   flutter_riverpod: ^3.5.0
 
   # Yerel kalıcı kayıt (tamamen çevrimdışı).

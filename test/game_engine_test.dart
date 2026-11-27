@@ -132,6 +132,97 @@ void main() {
     });
   });
 
+  group('moraleMultiplier / efficiency', () {
+    test('yüksek moralde ceza yok', () {
+      expect(GameEngine.moraleMultiplier(100), 1.0);
+      expect(
+        GameEngine.moraleMultiplier(GameBalance.fullEffectivenessMorale),
+        1.0,
+      );
+    });
+
+    test('moral düştükçe verimlilik azalır', () {
+      expect(GameEngine.moraleMultiplier(35), lessThan(1.0));
+      expect(
+        GameEngine.moraleMultiplier(10),
+        lessThan(GameEngine.moraleMultiplier(35)),
+      );
+    });
+
+    test('moral sıfırken bile üretim tamamen durmaz', () {
+      expect(GameEngine.moraleMultiplier(0), GameBalance.minMoraleMultiplier);
+      expect(GameEngine.moraleMultiplier(0), greaterThan(0));
+    });
+
+    test('verimlilik borç ve moral çarpanlarının bileşimidir', () {
+      final state = GameState.newGame().copyWith(techDebt: 80, teamMorale: 35);
+      expect(
+        GameEngine.efficiency(state),
+        closeTo(
+          GameEngine.revenueMultiplier(80) * GameEngine.moraleMultiplier(35),
+          1e-9,
+        ),
+      );
+      expect(GameEngine.efficiency(state), lessThan(1.0));
+    });
+  });
+
+  group('weeklyValuationGrowth', () {
+    test('gelirle büyür', () {
+      final low = GameState.newGame().copyWith(weeklyRevenue: 2000);
+      final high = GameState.newGame().copyWith(weeklyRevenue: 8000);
+      expect(
+        GameEngine.weeklyValuationGrowth(high),
+        greaterThan(GameEngine.weeklyValuationGrowth(low)),
+      );
+    });
+
+    test('ekip katkısı da değerlemeyi büyütür', () {
+      final solo = GameState.newGame();
+      final withTeam = solo.copyWith(team: [kSeniorHire.copyWith(id: 's1')]);
+      expect(
+        GameEngine.weeklyValuationGrowth(withTeam),
+        greaterThan(GameEngine.weeklyValuationGrowth(solo)),
+      );
+    });
+
+    test('teknik borç ve düşük moral büyümeyi kısar', () {
+      final healthy = GameState.newGame().copyWith(
+        techDebt: 10,
+        teamMorale: 90,
+      );
+      final struggling = GameState.newGame().copyWith(
+        techDebt: 90,
+        teamMorale: 20,
+      );
+      expect(
+        GameEngine.weeklyValuationGrowth(struggling),
+        lessThan(GameEngine.weeklyValuationGrowth(healthy)),
+      );
+    });
+  });
+
+  group('debtDriftForWeek', () {
+    test('ilk haftalarda taban hızda', () {
+      expect(GameEngine.debtDriftForWeek(1), GameBalance.weeklyDebtDrift);
+    });
+
+    test('hafta ilerledikçe hızlanır', () {
+      expect(
+        GameEngine.debtDriftForWeek(1 + GameBalance.debtDriftRampWeeks),
+        GameBalance.weeklyDebtDrift + 1,
+      );
+      expect(
+        GameEngine.debtDriftForWeek(60),
+        greaterThan(GameEngine.debtDriftForWeek(10)),
+      );
+    });
+
+    test('üst sınırı aşmaz', () {
+      expect(GameEngine.debtDriftForWeek(9999), GameBalance.maxWeeklyDebtDrift);
+    });
+  });
+
   group('evaluateOutcome', () {
     test('hedefe ulaşınca kazanılır', () {
       final state = GameState.newGame().copyWith(valuation: 1000000);
@@ -212,14 +303,19 @@ void main() {
         result.state.weeklyRevenue,
         start.weeklyRevenue + kShipFeatureAction.revenueDelta,
       );
+      // Değerleme iki kaynaktan büyür: aksiyonun kendi etkisi ve gelirden
+      // doğan haftalık büyüme.
       expect(
         result.state.valuation,
-        start.valuation + kShipFeatureAction.valuationDelta,
+        start.valuation +
+            kShipFeatureAction.valuationDelta +
+            result.valuationGrowth,
       );
-      // +15 aksiyon, +1 doğal artış
+      expect(result.valuationGrowth, greaterThan(0));
+      // +15 aksiyon, + o haftanın doğal artışı
       expect(
         result.state.techDebt,
-        start.techDebt + 15 + GameBalance.weeklyDebtDrift,
+        start.techDebt + 15 + GameEngine.debtDriftForWeek(start.week + 1),
       );
       expect(result.state.teamMorale, start.teamMorale - 6);
     });
@@ -243,8 +339,11 @@ void main() {
         kRefactorAction,
         random: noEvents,
       );
-      // -25 aksiyon, +1 doğal artış
-      expect(result.state.techDebt, 26);
+      // -25 aksiyon, + o haftanın doğal artışı
+      expect(
+        result.state.techDebt,
+        50 - 25 + GameEngine.debtDriftForWeek(start.week + 1),
+      );
       expect(result.state.teamMorale, start.teamMorale + 8);
     });
 

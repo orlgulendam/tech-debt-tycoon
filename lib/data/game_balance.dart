@@ -12,7 +12,21 @@ abstract final class GameBalance {
 
   /// Hiçbir şey yapılmasa bile teknik borcun haftalık doğal artışı
   /// (yüzde puanı). Kod eskir, bağımlılıklar sürüm atlar, dünya döner.
-  static const int weeklyDebtDrift = 1;
+  static const int weeklyDebtDrift = 3;
+
+  /// Doğal artışın kaç haftada bir 1 puan hızlandığı.
+  ///
+  /// Kod tabanı büyüdükçe çürüme hızlanır: aynı özen her hafta daha az
+  /// yetmeye başlar. Oyun mekaniği olarak bunun işlevi geç oyunda gerçek
+  /// bir yarış yaratmak — oyalanan oyuncu, kaynakları iyi olsa bile
+  /// sonunda borca yetişemez.
+  static const int debtDriftRampWeeks = 10;
+
+  /// Doğal artışın üst sınırı (yüzde puanı/hafta).
+  ///
+  /// Sınırsız bırakılsa oyun belirli bir haftadan sonra matematiksel olarak
+  /// kazanılamaz hâle gelirdi; bu da ceza değil duvar olurdu.
+  static const int maxWeeklyDebtDrift = 8;
 
   /// Teknik borcun geliri ısırmaya başladığı eşik (%).
   ///
@@ -35,11 +49,37 @@ abstract final class GameBalance {
   static const int debtMoralePenaltyThreshold = 60;
 
   /// [debtMoralePenaltyThreshold] üstünde haftalık moral kaybı (yüzde puanı).
-  static const int debtMoralePenalty = 2;
+  static const int debtMoralePenalty = 3;
 
   /// Teknik borç bu eşiğin üstündeyken moral kaybı ikiye katlanır.
   /// (Gece alarmları, sürekli hotfix, tükenmişlik.)
   static const int severeDebtThreshold = 80;
+
+  // --- Değerleme büyümesi ----------------------------------------------
+
+  /// Değerlemenin haftalık geliri kaç katına çevirdiği.
+  ///
+  /// Oyunun ana ilerleme motoru budur: değerleme tek tek aksiyonlardan
+  /// değil **gelirden** büyür, tıpkı gerçek şirketlerin gelir katsayısıyla
+  /// değerlenmesi gibi. Aksiyonların kendi değerleme etkisi yalnızca ek bir
+  /// itme sağlar.
+  ///
+  /// Bu büyüme teknik borç ve moral çarpanlarıyla ölçeklenir: borçlu ve
+  /// tükenmiş bir ekibin ürettiği gelir yatırımcı gözünde daha az değerlidir.
+  static const double valuationRevenueMultiple = 1.2;
+
+  // --- Moralin verimliliğe etkisi --------------------------------------
+
+  /// Moralin tam verim verdiği eşik (%). Bunun üstünde ceza yok.
+  static const int fullEffectivenessMorale = 70;
+
+  /// Moral sıfırken verimlilik çarpanı.
+  ///
+  /// Tükenmiş bir ekip çalışmayı bırakmaz, ama belirgin biçimde az iş
+  /// çıkarır. Bu çarpan nakit girişini ve değerleme büyümesini ölçekler;
+  /// aksiyon kartlarında yazan sayılara dokunmaz, böylece kartlar
+  /// yalan söylemez.
+  static const double minMoraleMultiplier = 0.55;
 
   // --- Olay kartları ----------------------------------------------------
 

@@ -45,18 +45,63 @@ abstract final class GameEngine {
     return max(GameBalance.minRevenueMultiplier, multiplier);
   }
 
+  /// Moralin verimliliğe etkisi (0.0 - 1.0).
+  ///
+  /// [GameBalance.fullEffectivenessMorale] üstünde ceza yok; altına
+  /// indikçe çarpan doğrusal olarak [GameBalance.minMoraleMultiplier]'a
+  /// yaklaşır. Tükenmiş bir ekip çalışmayı bırakmaz ama az iş çıkarır.
+  static double moraleMultiplier(int teamMorale) {
+    if (teamMorale >= GameBalance.fullEffectivenessMorale) return 1;
+    final ratio = teamMorale / GameBalance.fullEffectivenessMorale;
+    return GameBalance.minMoraleMultiplier +
+        (1 - GameBalance.minMoraleMultiplier) * ratio;
+  }
+
+  /// Teknik borç ve moralin birleşik verimlilik çarpanı (0.0 - 1.0).
+  ///
+  /// Oyunun kalbi burada: dört kaynak birbirine bağlı. Borçlu ve tükenmiş
+  /// bir ekibin ürettiği gelir hem kasaya daha az girer hem de yatırımcı
+  /// gözünde daha az değerlidir.
+  static double efficiency(GameState state) =>
+      revenueMultiplier(state.techDebt) * moraleMultiplier(state.teamMorale);
+
   /// Bu hafta kasaya girecek net nakit ($).
   ///
-  /// Temel gelir + ekip katkısı, teknik borç cezası uygulanır, sonra
-  /// maaşlar düşülür. Negatif olabilir.
+  /// Temel gelir + ekip katkısı, verimlilik çarpanı uygulanır, sonra
+  /// maaşlar düşülür. Negatif olabilir — maaşlar çarpandan etkilenmez,
+  /// bordro moralden bağımsız ödenir.
   static int collectableCash(GameState state) {
     final gross = state.weeklyRevenue + state.totalTeamRevenue;
-    final afterPenalty = (gross * revenueMultiplier(state.techDebt)).round();
+    final afterPenalty = (gross * efficiency(state)).round();
     return afterPenalty - state.totalSalaries;
   }
 
+  /// Bu hafta gelirden doğan değerleme büyümesi ($).
+  ///
+  /// Oyunun ana ilerleme motoru. Aksiyonların kendi değerleme etkisi
+  /// buna eklenen ek bir itmedir.
+  static int weeklyValuationGrowth(GameState state) {
+    final gross = state.weeklyRevenue + state.totalTeamRevenue;
+    return (gross * GameBalance.valuationRevenueMultiple * efficiency(state))
+        .round();
+  }
+
+  /// Verilen haftada teknik borcun doğal haftalık artışı (yüzde puanı).
+  ///
+  /// Hafta ilerledikçe hızlanır: kod tabanı büyüdükçe aynı özen daha az
+  /// yetmeye başlar. [GameBalance.maxWeeklyDebtDrift] ile sınırlı, çünkü
+  /// sınırsız artış oyunu belirli bir haftadan sonra kazanılamaz hâle
+  /// getirirdi.
+  static int debtDriftForWeek(int week) {
+    final ramp = (week - 1) ~/ GameBalance.debtDriftRampWeeks;
+    return min(
+      GameBalance.maxWeeklyDebtDrift,
+      GameBalance.weeklyDebtDrift + ramp,
+    );
+  }
+
   /// Teknik borcun doğal artışı ve yüksek borcun moral cezası.
-  static GameEffect debtPressure(int techDebt) {
+  static GameEffect debtPressure(int techDebt, {int week = 1}) {
     var moralePenalty = 0;
     if (techDebt >= GameBalance.debtMoralePenaltyThreshold) {
       moralePenalty = GameBalance.debtMoralePenalty;
@@ -65,7 +110,7 @@ abstract final class GameEngine {
       }
     }
     return GameEffect(
-      techDebtDelta: GameBalance.weeklyDebtDrift,
+      techDebtDelta: debtDriftForWeek(week),
       moraleDelta: -moralePenalty,
     );
   }
@@ -169,24 +214,29 @@ abstract final class GameEngine {
     final revenueCollected = collectableCash(next);
     next = next.copyWith(budget: next.budget + revenueCollected);
 
-    // 4) Ekibin pasif borç/moral etkisi.
+    // 4) Gelirden doğan değerleme büyümesi. Teknik borç ve moral bu
+    //    büyümeyi birlikte ölçekler.
+    final valuationGrowth = weeklyValuationGrowth(next);
+    next = next.copyWith(valuation: next.valuation + valuationGrowth);
+
+    // 5) Ekibin pasif borç/moral etkisi.
     final teamEffect = next.teamDebtMoraleEffect;
     next = applyEffect(next, teamEffect);
 
-    // 5) Teknik borcun doğal artışı ve yüksek borç cezası.
-    final debtEffect = debtPressure(next.techDebt);
+    // 6) Teknik borcun doğal artışı ve yüksek borç cezası.
+    final debtEffect = debtPressure(next.techDebt, week: next.week);
     next = applyEffect(next, debtEffect);
 
-    // 6) Hafta ilerler.
+    // 7) Hafta ilerler.
     next = next.copyWith(week: next.week + 1);
 
-    // 7) Olay kartı çekilişi.
+    // 8) Olay kartı çekilişi.
     final event = rollEvent(next, rng);
     if (event != null) {
       next = next.copyWith(pendingEventId: event.id);
     }
 
-    // 8) Kazanma/kaybetme kontrolü.
+    // 9) Kazanma/kaybetme kontrolü.
     next = evaluateOutcome(next);
 
     return SprintResult(
@@ -197,6 +247,7 @@ abstract final class GameEngine {
       teamEffect: teamEffect,
       debtEffect: debtEffect,
       revenueCollected: revenueCollected,
+      valuationGrowth: valuationGrowth,
       hiredEmployee: hiredEmployee,
       triggeredEvent: event,
     );

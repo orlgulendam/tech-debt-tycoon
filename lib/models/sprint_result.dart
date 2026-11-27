@@ -19,6 +19,7 @@ class SprintResult {
     required this.teamEffect,
     required this.debtEffect,
     required this.revenueCollected,
+    required this.valuationGrowth,
     this.hiredEmployee,
     this.triggeredEvent,
   });
@@ -43,8 +44,14 @@ class SprintResult {
 
   /// Bu hafta kasaya giren net nakit ($).
   ///
-  /// Gelir (teknik borç cezası uygulanmış) eksi maaşlar. Negatif olabilir.
+  /// Gelir (verimlilik çarpanı uygulanmış) eksi maaşlar. Negatif olabilir.
   final int revenueCollected;
+
+  /// Bu hafta gelirden doğan değerleme büyümesi ($).
+  ///
+  /// Aksiyonun kendi değerleme etkisinden ayrı tutulur ki UI "gelirin
+  /// getirdiği" ile "aksiyonun getirdiği" değerlemeyi ayrı gösterebilsin.
+  final int valuationGrowth;
 
   /// İşe alım yapıldıysa ekibe katılan çalışan.
   final Employee? hiredEmployee;

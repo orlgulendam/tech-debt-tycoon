@@ -20,7 +20,7 @@ elle oynanır.
 Geliştirme aşamalı yürüyor:
 
 - [x] **Aşama 1** — İskelet, bağımlılıklar, veri modelleri ve statik veri
-- [ ] **Aşama 2** — Oyun motoru, Riverpod durum yönetimi, ipucu algoritması, otomatik kayıt
+- [x] **Aşama 2** — Oyun motoru, Riverpod durum yönetimi, ipucu algoritması, otomatik kayıt, sahte reklam
 - [ ] **Aşama 3** — Tema, navigasyon, ekranlar, onboarding
 - [ ] **Aşama 4** — Haptic feedback, skor kartı, mağaza yayın hazırlığı
 
@@ -62,9 +62,17 @@ dart test
 flutter test
 ```
 
-Modeller ve statik veri Flutter'a bağımlı olmadığı için testler saf
-`dart test` ile de koşar; motor başlatılmadığı için CI'da belirgin biçimde
-daha hızlıdır. `flutter test` aynı testleri Flutter koşucusuyla çalıştırır.
+Testler iki gruba ayrılıyor:
+
+| Komut | Kapsam | Adet |
+| --- | --- | --- |
+| `dart test` | Saf Dart: modeller, statik veri, oyun motoru, ipucu algoritması, kayıt servisi, Riverpod provider'ları | 207 |
+| `flutter test` | Yukarıdakilerin hepsi + widget testleri | 213 |
+
+Model, motor, servis ve **provider** katmanlarının hiçbiri Flutter'a bağımlı
+değil, bu yüzden oyunun bütün mantığı motor başlatılmadan koşuyor — CI'da
+belirgin biçimde hızlı. Hangi dosyanın hangi koşucuya gittiği
+`dart_test.yaml` içinde yazılı.
 
 > **Not:** Betik Android SDK ve Java kurmaz, dolayısıyla APK/AAB derlemez.
 > Analiz ve testler için gerek yok; cihaz derlemesi yapacaksan Android Studio
@@ -76,8 +84,8 @@ daha hızlıdır. `flutter test` aynı testleri Flutter koşucusuyla çalıştı
 lib/
 ├── models/      # Değişmez veri sınıfları (saf Dart, Flutter bağımlılığı yok)
 ├── data/        # Statik oyun içeriği: karakterler, aksiyonlar, olaylar, sözlük
-├── providers/   # Riverpod provider'ları              (Aşama 2)
-├── services/    # Kayıt, reklam, ipucu servisleri     (Aşama 2)
+├── providers/   # Riverpod provider'ları (saf Dart)
+├── services/    # Oyun motoru, kayıt, ipucu, reklam servisleri
 ├── theme/       # Renkler ve tipografi                (Aşama 3)
 ├── screens/     # Ekranlar                            (Aşama 3)
 ├── widgets/     # Yeniden kullanılabilir bileşenler   (Aşama 3)
@@ -86,14 +94,30 @@ lib/
 test/
 ├── models_test.dart           # copyWith, serileştirme, türetilmiş değerler
 ├── data_integrity_test.dart   # statik verinin eksiksizliği ve denge aralıkları
-└── l10n_test.dart             # her metin anahtarının karşılığı dolu mu
+├── l10n_test.dart             # her metin anahtarının karşılığı dolu mu
+├── game_engine_test.dart      # haftalık simülasyon, olaylar, kazanma/kaybetme
+├── hint_service_test.dart     # ipucu kurallarının öncelik sırası
+├── storage_service_test.dart  # kayıt sözleşmesi
+├── ad_service_test.dart       # sahte reklam sonuçları
+├── game_provider_test.dart    # otomatik kayıt, devam ettirme, oyun akışı
+└── widget/
+    └── app_smoke_test.dart    # uygulama gerçekten ayağa kalkıyor mu
 tool/
 └── setup_flutter.sh
 ```
 
 ### Mimari kararlar
 
-- **Durum yönetimi:** Riverpod (`flutter_riverpod`).
+- **Durum yönetimi:** Riverpod. `lib/providers/` bilinçli olarak **saf Dart**
+  `riverpod` paketini kullanıyor; `flutter_riverpod`'a yalnızca widget'lar
+  dokunuyor. Böylece bütün oyun mantığı `dart test` ile test edilebiliyor.
+- **Oyun motoru:** `lib/services/game_engine.dart` tamamen saf
+  fonksiyonlardan oluşuyor — içeride durum tutmuyor, rastgeleliği çağırandan
+  alıyor. Bu yüzden her kural deterministik biçimde test edilebiliyor
+  (200 haftalık rastgele oyun testi dahil).
+- **Otomatik kayıt:** Durum her değiştiğinde kaydedilir. Karar bekleyen olay
+  kartı da kayda yazıldığı için oyuncu uygulamayı olay ekranında kapatsa bile
+  açtığında aynı kararla karşılaşır.
 - **Kalıcı kayıt:** Hive. Kayıtlı modeller (`GameState`, `GameRecord`) Hive
   kutusunda **JSON map** olarak tutulur, üretilmiş `TypeAdapter` ile değil.
   Gerekçesi `pubspec.yaml` içinde yazılı: `hive_generator` araç zincirini
@@ -116,4 +140,4 @@ tool/
 | İşe alım seçeneği | 4 (Junior, Mid, Senior, DevOps) |
 | Olay kartı | 14 (41 seçenek) |
 | Sözlük terimi | 17 |
-| Metin anahtarı | 109 |
+| Metin anahtarı | 134 |

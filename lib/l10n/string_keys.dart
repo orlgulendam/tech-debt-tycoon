@@ -48,6 +48,29 @@ enum StringKey {
   hintAskButton,
   hintEverythingFine,
 
+  // --- İpucu metinleri (akıllı ipucu algoritması) ---
+  // Her kural için bir tavsiye (advice) ve bir gerekçe (reason) anahtarı.
+  hintDebtCriticalAdvice,
+  hintDebtCriticalReason,
+  hintDebtHighAdvice,
+  hintDebtHighReason,
+  hintMoraleCriticalAdvice,
+  hintMoraleCriticalReason,
+  hintMoraleLowAdvice,
+  hintMoraleLowReason,
+  hintBudgetCriticalAdvice,
+  hintBudgetCriticalReason,
+  hintBudgetLowAdvice,
+  hintBudgetLowReason,
+  hintCashFlowNegativeAdvice,
+  hintCashFlowNegativeReason,
+  hintHireTeamAdvice,
+  hintHireTeamReason,
+  hintSlowGrowthAdvice,
+  hintSlowGrowthReason,
+  hintAllGoodAdvice,
+  hintAllGoodReason,
+
   // --- Sahte reklam ---
   adSheetTitle,
   adLoading,
@@ -121,6 +144,13 @@ enum StringKey {
   gameOverCrisesLabel,
   gameOverCtoNoteLabel,
   gameOverRestartButton,
+
+  // --- CTO notları (oyun sonu değerlendirmesi) ---
+  ctoNoteWonClean,
+  ctoNoteWonWithDebt,
+  ctoNoteLostBankruptcy,
+  ctoNoteLostMeltdown,
+  ctoNoteLostResignation,
 
   // --- Onboarding ---
   onboardingSkip,

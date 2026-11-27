@@ -49,6 +49,53 @@ const Map<StringKey, String> kStringsTr = {
   StringKey.hintEverythingFine:
       'Her şey yolunda görünüyor. Bu his genelde uzun sürmez.',
 
+  // --- İpucu metinleri ---
+  StringKey.hintDebtCriticalAdvice:
+      'Her şeyi bırak, refactoring sprinti yap. Şimdi.',
+  StringKey.hintDebtCriticalReason:
+      'Teknik borç %{value}. Sunucular %100\'de yanıyor ve sen oraya iki '
+      'kötü haftalık mesafedesin. Yeni feature artık gelir değil risk getiriyor.',
+  StringKey.hintDebtHighAdvice: 'Bir sprint\'i borç ödemeye ayır.',
+  StringKey.hintDebtHighReason:
+      'Teknik borç %{value}. Bu seviyenin üstünde gelirin bir kısmını '
+      'kaybediyorsun ve ekip her hafta moral eritiyor.',
+  StringKey.hintMoraleCriticalAdvice:
+      'Ekip motivasyonuna bütçe ayır, başka hiçbir şey yapma.',
+  StringKey.hintMoraleCriticalReason:
+      'Moral %{value}. Sıfıra inerse ekip toplu istifa eder ve oyun biter. '
+      'Bu noktada hiçbir feature o kadar önemli değil.',
+  StringKey.hintMoraleLowAdvice:
+      'Ekibe nefes aldır: motivasyon ya da refactoring.',
+  StringKey.hintMoraleLowReason:
+      'Moral %{value}. Düşük moralde insanlar daha çok hata yapıyor, '
+      'hatalar da morali daha çok düşürüyor. Döngüyü şimdi kır.',
+  StringKey.hintBudgetCriticalAdvice: 'Hemen gelir getiren bir şey çıkar.',
+  StringKey.hintBudgetCriticalReason:
+      'Bütçe {value}\$ ve haftalık maaş yükün bunun yarısından fazla. '
+      'İki hafta içinde bordroyu ödeyemezsin.',
+  StringKey.hintBudgetLowAdvice:
+      'Gelire odaklan; pahalı aksiyonları şimdilik ertele.',
+  StringKey.hintBudgetLowReason:
+      'Bütçe {value}\$. Kasa 0\$\'a inerse iflas. Önce nakit, sonra temizlik.',
+  StringKey.hintCashFlowNegativeAdvice:
+      'Geliri artır: haftalık nakit akışın negatif.',
+  StringKey.hintCashFlowNegativeReason:
+      'Her hafta {value}\$ kaybediyorsun. Maaşlar gelirden fazla; '
+      'bu gidişle bütçe kendi kendine tükenir.',
+  StringKey.hintHireTeamAdvice:
+      'İşe alım yap. Tek başına 1.000.000\$\'a çıkamazsın.',
+  StringKey.hintHireTeamReason:
+      'Ekip boş ve bütçen {value}\$. Doğru kişi hem gelir getirir hem de '
+      'teknik borcu erittiği için kendini amorti eder.',
+  StringKey.hintSlowGrowthAdvice: 'Değerlemeyi büyütmeye odaklan.',
+  StringKey.hintSlowGrowthReason:
+      '{week}. haftadasın ve hedefin %{value}\'ini tamamladın. Kaynaklar '
+      'sağlamken büyümeye basmanın tam zamanı.',
+  StringKey.hintAllGoodAdvice: 'Dengeyi koru: bir feature, bir temizlik.',
+  StringKey.hintAllGoodReason:
+      'Bütün metrikler güvenli aralıkta. Teknik borç birikmeden büyümeye '
+      'devam edebilirsin — bu durum genelde uzun sürmez, kıymetini bil.',
+
   // --- Sahte reklam ---
   StringKey.adSheetTitle: 'Sponsorlu İçerik',
   StringKey.adLoading: 'Reklam yükleniyor... (söz veriyoruz, kısa)',
@@ -126,6 +173,23 @@ const Map<StringKey, String> kStringsTr = {
   StringKey.gameOverCrisesLabel: 'Çözülen kriz',
   StringKey.gameOverCtoNoteLabel: 'CTO Notu',
   StringKey.gameOverRestartButton: 'Yeniden Dene',
+
+  // --- CTO notları ---
+  StringKey.ctoNoteWonClean:
+      'Unicorn oldun ve kod tabanı hâlâ okunabilir. Bu ikisini birlikte '
+      'başaran CTO sayısı sandığından az. Zeynep sana bir kahve borçlu.',
+  StringKey.ctoNoteWonWithDebt:
+      'Hedefe ulaştın ama arkanda bir enkaz bıraktın. Değerleme 1.000.000\$, '
+      'teknik borç ise bir sonraki CTO\'nun problemi. Klasik exit.',
+  StringKey.ctoNoteLostBankruptcy:
+      'Kasa boşaldı. Ürün çalışıyordu, ekip iyiydi, sadece para bitti — '
+      'girişimlerin yarısı tam olarak böyle ölüyor.',
+  StringKey.ctoNoteLostMeltdown:
+      'Teknik borç %100. Her hafta "sonra düzeltiriz" dedin, sonra hiç '
+      'gelmedi. Sunucular senden önce pes etti.',
+  StringKey.ctoNoteLostResignation:
+      'Ekip gitti. Kod kaldı, ürün kaldı, onu çalıştıracak kimse kalmadı. '
+      'İnsanlar istifa ettiğinde şirketten değil yöneticiden istifa eder.',
 
   // --- Onboarding ---
   StringKey.onboardingSkip: 'Atla',

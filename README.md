@@ -21,7 +21,7 @@ Geliştirme aşamalı yürüyor:
 
 - [x] **Aşama 1** — İskelet, bağımlılıklar, veri modelleri ve statik veri
 - [x] **Aşama 2** — Oyun motoru, Riverpod durum yönetimi, ipucu algoritması, otomatik kayıt, sahte reklam
-- [ ] **Aşama 3** — Tema, navigasyon, ekranlar, onboarding
+- [x] **Aşama 3** — Tema, navigasyon, ekranlar, onboarding, bottom sheet bileşenleri
 - [ ] **Aşama 4** — Haptic feedback, skor kartı, mağaza yayın hazırlığı
 
 ## Geliştirme ortamı kurulumu
@@ -66,8 +66,8 @@ Testler iki gruba ayrılıyor:
 
 | Komut | Kapsam | Adet |
 | --- | --- | --- |
-| `dart test` | Saf Dart: modeller, statik veri, oyun motoru, ipucu algoritması, kayıt servisi, Riverpod provider'ları | 207 |
-| `flutter test` | Yukarıdakilerin hepsi + widget testleri | 213 |
+| `dart test` | Saf Dart: modeller, statik veri, oyun motoru, ipucu algoritması, kayıt servisi, Riverpod provider'ları | 217 |
+| `flutter test` | Yukarıdakilerin hepsi + widget testleri | 237 |
 
 Model, motor, servis ve **provider** katmanlarının hiçbiri Flutter'a bağımlı
 değil, bu yüzden oyunun bütün mantığı motor başlatılmadan koşuyor — CI'da
@@ -86,9 +86,9 @@ lib/
 ├── data/        # Statik oyun içeriği: karakterler, aksiyonlar, olaylar, sözlük
 ├── providers/   # Riverpod provider'ları (saf Dart)
 ├── services/    # Oyun motoru, kayıt, ipucu, reklam servisleri
-├── theme/       # Renkler ve tipografi                (Aşama 3)
-├── screens/     # Ekranlar                            (Aşama 3)
-├── widgets/     # Yeniden kullanılabilir bileşenler   (Aşama 3)
+├── theme/       # Renkler, tipografi, ikon eşlemesi
+├── screens/     # Ofis, Ekip, Sözlük, Log, onboarding, kabuk
+├── widgets/     # Yeniden kullanılabilir bileşenler + bottom sheet'ler
 ├── l10n/        # Merkezi metin yönetimi
 └── main.dart
 test/
@@ -103,7 +103,10 @@ test/
 └── widget/
     └── app_smoke_test.dart    # uygulama gerçekten ayağa kalkıyor mu
 tool/
-└── setup_flutter.sh
+├── setup_flutter.sh
+└── balance_sim.dart           # oyun dengesi simülatörü (ölçüm aracı)
+assets/
+└── fonts/                     # JetBrains Mono (gömülü, çevrimdışı)
 ```
 
 ### Mimari kararlar
@@ -130,6 +133,33 @@ tool/
   Türkçe; ikinci dil için yalnızca yeni bir metin tablosu ve içerik dosyası
   eklenir, UI kodu değişmez.
 
+## Oyun dengesi
+
+Denge sayıları tahminle değil **ölçümle** ayarlandı. `tool/balance_sim.dart`
+birkaç oyuncu stratejisiyle binlerce oyun koşturup kazanma oranını, oyun
+uzunluğunu ve kaybetme nedenlerini raporluyor:
+
+```bash
+dart run tool/balance_sim.dart 3000
+```
+
+Mevcut ayarlarla ölçülen sonuç (3000 oyun/strateji):
+
+| Strateji | Kazanma | Medyan hafta | Kaybetme nedenleri |
+| --- | --- | --- | --- |
+| Sadece feature çıkar | %0 | – | borç %100 |
+| Dengeli oyun | %99,8 | 27 | – |
+| İpucunu dinle | %97,9 | 27 | borç %2 |
+| Rastgele | %55,7 | 35 | borç %42, iflas %3 |
+
+Tasarım hedefi: teknik borcu yok sayan oyuncu **her zaman** kaybetsin,
+bilinçli oyuncu 25-40 haftada kazansın. İlerlemenin ana motoru tek tek
+aksiyonlar değil **gelir**: değerleme her hafta gelirin bir katı kadar
+büyüyor ve bu büyüme teknik borç ile moral çarpanlarıyla ölçekleniyor —
+yani dört kaynak birbirine bağlı.
+
+Bütün ayar düğmeleri tek dosyada: `lib/data/game_balance.dart`.
+
 ## İçerik
 
 | Veri | Adet |
@@ -140,4 +170,4 @@ tool/
 | İşe alım seçeneği | 4 (Junior, Mid, Senior, DevOps) |
 | Olay kartı | 14 (41 seçenek) |
 | Sözlük terimi | 17 |
-| Metin anahtarı | 134 |
+| Metin anahtarı | 136 |

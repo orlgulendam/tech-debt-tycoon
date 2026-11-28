@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -5,9 +7,10 @@ import '../l10n/l10n.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../theme/theme.dart';
+import 'capture_boundary.dart';
 import 'character_bubble.dart';
 import 'pulse.dart';
-import 'section_label.dart';
+import 'score_card.dart';
 
 /// Oyun sonu kartı: skor özeti ve kapanış repliği.
 ///
@@ -34,12 +37,57 @@ class _GameOverCardState extends ConsumerState<GameOverCard>
     duration: AppMotion.celebrate,
   )..forward();
 
+  /// Karneyi görsele çevirmek için.
+  final CaptureController _capture = CaptureController();
+
+  /// Paylaşım sürüyor mu? (Butonu kilitlemek ve çift tetiklemeyi önlemek.)
+  bool _sharing = false;
+
   GameState get state => widget.state;
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  /// Karneyi PNG'ye çevirip sistem paylaşım sayfasını açar.
+  ///
+  /// Görsel üretilemezse yalnızca metin paylaşılıyor: oyuncunun eli boş
+  /// kalmasın.
+  Future<void> _share() async {
+    setState(() => _sharing = true);
+    final strings = ref.read(stringsProvider);
+    final haptics = ref.read(hapticsProvider);
+
+    final image = await _capture.capturePng();
+    final text = strings.format(StringKey.gameOverShareText, {
+      'weeks': '${state.week}',
+      'valuation': formatMoney(state.valuation),
+      'crises': '${state.resolvedCrises}',
+    });
+
+    final shared = await ref
+        .read(shareServiceProvider)
+        .shareScore(
+          text: text,
+          subject: strings[StringKey.gameOverShareSubject],
+          fileName: 'tech-debt-tycoon-skor.png',
+          imageBytes: image,
+        );
+
+    if (!mounted) return;
+    setState(() => _sharing = false);
+
+    if (shared) {
+      unawaited(haptics.success());
+      return;
+    }
+
+    unawaited(haptics.warning());
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(strings[StringKey.gameOverShareFailed])),
+    );
   }
 
   @override
@@ -79,50 +127,28 @@ class _GameOverCardState extends ConsumerState<GameOverCard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Pulse(
-                  active: won,
-                  minOpacity: 0.55,
-                  child: Icon(
-                    won ? AppIcons.unicorn : Icons.dangerous_outlined,
-                    color: accent,
-                    size: AppDimens.iconMd,
-                  ),
-                ),
-                const SizedBox(width: AppDimens.gapSm),
-                Expanded(
-                  child: Text(
-                    won
-                        ? strings[StringKey.gameOverWonTitle]
-                        : strings[StringKey.gameOverLostTitle],
-                    style: textTheme.headlineSmall?.copyWith(color: accent),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimens.gapMd),
-            Text(
-              won
-                  ? strings[StringKey.gameOverWonSubtitle]
-                  : strings[_lossReasonKey(state.lossReason)],
-              style: textTheme.bodyMedium,
+            // Başlık, sonuç ve sayılar karnenin kendi içinde. Dışarıda
+            // tekrar etmiyoruz: aynı cümleyi iki kez göstermek kartı
+            // kalabalıklaştırıyordu.
+            //
+            // Paylaşılan görselin birebir aynısı ekranda duruyor; oyuncu
+            // ne paylaşacağını önceden görüyor.
+            Pulse(
+              active: won,
+              minOpacity: 0.7,
+              child: CaptureBoundary(
+                controller: _capture,
+                child: ScoreCard(state: state),
+              ),
             ),
             const SizedBox(height: AppDimens.gapLg),
-            SectionLabel(strings[StringKey.logStatsSectionTitle]),
-            _ScoreRow(
-              label: strings[StringKey.gameOverWeeksLabel],
-              value: '${state.week}',
-            ),
-            _ScoreRow(
-              label: strings[StringKey.gameOverValuationLabel],
-              value: formatMoney(state.valuation),
-            ),
-            _ScoreRow(
-              label: strings[StringKey.gameOverCrisesLabel],
-              value: '${state.resolvedCrises}',
-            ),
-            const SizedBox(height: AppDimens.gapLg),
+            if (won) ...[
+              Text(
+                strings[StringKey.gameOverWonSubtitle],
+                style: textTheme.bodyMedium,
+              ),
+              const SizedBox(height: AppDimens.gapLg),
+            ],
             // Kapanış repliği: kazandıysak Mert, kaybettiysek Zeynep
             // konuşuyor — ikisi de karakterine uygun.
             CharacterBubble(
@@ -133,6 +159,18 @@ class _GameOverCardState extends ConsumerState<GameOverCard>
             ),
             const SizedBox(height: AppDimens.gapLg),
             FilledButton.icon(
+              onPressed: _sharing ? null : _share,
+              icon: _sharing
+                  ? const SizedBox(
+                      width: AppDimens.iconSm,
+                      height: AppDimens.iconSm,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.ios_share, size: AppDimens.iconSm),
+              label: Text(strings[StringKey.gameOverShareButton]),
+            ),
+            const SizedBox(height: AppDimens.gapSm),
+            OutlinedButton.icon(
               onPressed: () {
                 ref.read(hapticsProvider).selection();
                 ref.read(gameControllerProvider.notifier).startNewGame();
@@ -145,13 +183,6 @@ class _GameOverCardState extends ConsumerState<GameOverCard>
       ),
     );
   }
-
-  StringKey _lossReasonKey(LossReason? reason) => switch (reason) {
-    LossReason.bankruptcy => StringKey.lossReasonBankruptcy,
-    LossReason.serverMeltdown => StringKey.lossReasonServerMeltdown,
-    LossReason.massResignation => StringKey.lossReasonMassResignation,
-    null => StringKey.gameOverLostTitle,
-  };
 
   Character? _closingSpeaker(List<Character> characters, bool won) {
     final id = won ? 'mert' : 'zeynep';
@@ -169,33 +200,5 @@ class _GameOverCardState extends ConsumerState<GameOverCard>
     // Replik seçimi hafta sayısına bağlı: aynı oyunda hep aynı cümle
     // görünür, farklı oyunlarda değişir.
     return speaker?.dialogueAt(situation, state.week) ?? '';
-  }
-}
-
-/// Skor kartındaki etiket/değer satırı.
-class _ScoreRow extends StatelessWidget {
-  const _ScoreRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: textTheme.bodySmall)),
-          Text(
-            value,
-            style: textTheme.titleSmall?.copyWith(
-              fontFeatures: AppTypography.tabularFigures,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

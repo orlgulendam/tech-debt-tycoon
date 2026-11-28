@@ -11,6 +11,7 @@ import 'package:tech_debt_tycoon/models/models.dart';
 import 'package:tech_debt_tycoon/providers/providers.dart';
 import 'package:tech_debt_tycoon/screens/home_shell.dart';
 import 'package:tech_debt_tycoon/screens/onboarding_screen.dart';
+import 'package:tech_debt_tycoon/services/share_service.dart';
 import 'package:tech_debt_tycoon/services/storage_service.dart';
 import 'package:tech_debt_tycoon/theme/theme.dart';
 
@@ -39,25 +40,27 @@ void main() {
     addTearDown(tester.view.reset);
   }
 
-  Widget app(InMemoryStorageService storage) => ProviderScope(
-    overrides: [
-      storageServiceProvider.overrideWithValue(storage),
-      randomProvider.overrideWithValue(noEvents),
-    ],
-    // Hareket azaltma açık: sonsuz nabız animasyonları pumpAndSettle'ı
-    // kilitlemesin ve daktilo efekti metni hemen tam göstersin.
-    //
-    // MediaQueryData gerçek görünümden türetiliyor; sıfırdan kurulan bir
-    // MediaQueryData ekran boyutunu 0x0 yapıyor ve dokunmalar hedefi
-    // bulamıyor.
-    child: Builder(
-      builder: (context) => MediaQuery(
-        data: MediaQueryData.fromView(View.of(context))
-            .copyWith(disableAnimations: true),
-        child: const TechDebtTycoonApp(),
-      ),
-    ),
-  );
+  Widget app(InMemoryStorageService storage, {ShareService? share}) =>
+      ProviderScope(
+        overrides: [
+          storageServiceProvider.overrideWithValue(storage),
+          randomProvider.overrideWithValue(noEvents),
+          if (share != null) shareServiceProvider.overrideWithValue(share),
+        ],
+        // Hareket azaltma açık: sonsuz nabız animasyonları pumpAndSettle'ı
+        // kilitlemesin ve daktilo efekti metni hemen tam göstersin.
+        //
+        // MediaQueryData gerçek görünümden türetiliyor; sıfırdan kurulan bir
+        // MediaQueryData ekran boyutunu 0x0 yapıyor ve dokunmalar hedefi
+        // bulamıyor.
+        child: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQueryData.fromView(View.of(context))
+                .copyWith(disableAnimations: true),
+            child: const TechDebtTycoonApp(),
+          ),
+        ),
+      );
 
   /// Alt navigasyon çubuğundaki sekme etiketini bulur.
   ///
@@ -242,6 +245,65 @@ void main() {
         find.text(strings[StringKey.gameOverRestartButton]),
         findsOneWidget,
       );
+    });
+
+    testWidgets('skor karnesi paylaşılabiliyor', (tester) async {
+      useTallPhone(tester);
+      final share = RecordingShareService();
+      await tester.pumpWidget(
+        app(
+          readyStorage(
+            gameState: GameState.newGame().copyWith(
+              week: 34,
+              valuation: 1000000,
+              resolvedCrises: 8,
+              status: GameStatus.won,
+            ),
+          ),
+          share: share,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Karne PNG'ye çevrilirken RenderRepaintBoundary.toImage() gerçek
+      // asenkron iş yapıyor; runAsync olmadan hiç tamamlanmıyor ve
+      // pumpAndSettle kilitleniyor.
+      await tester.runAsync(() async {
+        await tester.tap(find.text(strings[StringKey.gameOverShareButton]));
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pump();
+
+      expect(share.shareCount, 1);
+      // Paylaşılan metin skorun üç sayısını da taşımalı.
+      expect(share.lastText, contains('34'));
+      expect(share.lastText, contains('1.000.000\$'));
+      expect(share.lastText, contains('8'));
+    });
+
+    testWidgets('paylaşım açılamazsa kullanıcıya söylenir', (tester) async {
+      useTallPhone(tester);
+      await tester.pumpWidget(
+        app(
+          readyStorage(
+            gameState: GameState.newGame().copyWith(
+              status: GameStatus.lost,
+              lossReason: LossReason.serverMeltdown,
+            ),
+          ),
+          share: RecordingShareService(succeeds: false),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.runAsync(() async {
+        await tester.tap(find.text(strings[StringKey.gameOverShareButton]));
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(strings[StringKey.gameOverShareFailed]), findsOneWidget);
     });
 
     testWidgets('yeniden dene oyunu sıfırlar', (tester) async {
@@ -444,6 +506,53 @@ void main() {
 
       expect(find.text(kSeniorHire.name), findsOneWidget);
       expect(find.text(strings[StringKey.teamEmptyMessage]), findsNothing);
+    });
+  });
+
+  group('nasıl oynanır', () {
+    testWidgets('yardım ekranı açılıyor ve kuralları anlatıyor', (
+      tester,
+    ) async {
+      useTallPhone(tester);
+      await tester.pumpWidget(app(readyStorage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.help_outline));
+      await tester.pumpAndSettle();
+
+      expect(find.text(strings[StringKey.helpTitle]), findsOneWidget);
+      expect(find.text(strings[StringKey.helpGoalBody]), findsOneWidget);
+      // Üç kaybetme yolu da listelenmeli.
+      expect(
+        find.text(strings[StringKey.lossReasonBankruptcy]),
+        findsOneWidget,
+      );
+      expect(
+        find.text(strings[StringKey.lossReasonServerMeltdown]),
+        findsOneWidget,
+      );
+      expect(
+        find.text(strings[StringKey.lossReasonMassResignation]),
+        findsOneWidget,
+      );
+      // Aksiyonların gerçek adları veri katmanından geliyor.
+      for (final action in kGameActions) {
+        expect(find.text(action.name), findsOneWidget, reason: action.id);
+      }
+    });
+
+    testWidgets('yardım ekranından oyuna dönülebiliyor', (tester) async {
+      useTallPhone(tester);
+      await tester.pumpWidget(app(readyStorage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.help_outline));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text(strings[StringKey.helpTitle]), findsNothing);
+      expect(find.text('Hafta 1'), findsOneWidget);
     });
   });
 

@@ -8,6 +8,7 @@ import 'screens/home_shell.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/hive_storage_service.dart';
 import 'services/platform_haptics_service.dart';
+import 'services/platform_share_service.dart';
 import 'services/storage_service.dart';
 import 'theme/theme.dart';
 
@@ -33,6 +34,7 @@ Future<void> main() async {
       overrides: [
         storageServiceProvider.overrideWithValue(storage),
         hapticsProvider.overrideWithValue(const PlatformHapticsService()),
+        shareServiceProvider.overrideWithValue(const PlatformShareService()),
       ],
       child: const TechDebtTycoonApp(),
     ),

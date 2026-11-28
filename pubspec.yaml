@@ -46,6 +46,8 @@ dependencies:
   #     arası şema göçü derdi kalkıyor (modelde `schemaVersion` alanı var).
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  share_plus: ^13.3.1
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:

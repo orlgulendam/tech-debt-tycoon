@@ -6,6 +6,7 @@ import '../providers/providers.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 import 'glossary_screen.dart';
+import 'help_screen.dart';
 import 'log_screen.dart';
 import 'office_screen.dart';
 import 'team_screen.dart';
@@ -69,6 +70,18 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       appBar: AppBar(
         title: Text(strings[StringKey.appTitle]),
         actions: [
+          IconButton(
+            tooltip: strings[StringKey.helpTitle],
+            icon: const Icon(Icons.help_outline),
+            onPressed: () {
+              ref.read(hapticsProvider).selection();
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const HelpScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             tooltip: strings[StringKey.commonNewGame],
             icon: const Icon(AppIcons.newGame),

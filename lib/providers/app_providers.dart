@@ -7,6 +7,7 @@ import '../l10n/l10n.dart';
 import '../services/ad_service.dart';
 import '../services/haptics_service.dart';
 import '../services/hint_service.dart';
+import '../services/share_service.dart';
 import '../services/storage_service.dart';
 
 /// Uygulama genelindeki altyapı provider'ları.
@@ -75,6 +76,15 @@ final adServiceProvider = Provider<AdService>((ref) {
 /// gibi kullanıyor.
 final hapticsProvider = Provider<HapticsService>((ref) {
   return const NoopHapticsService();
+});
+
+/// Skor paylaşımı.
+///
+/// Varsayılan kaydedici uygulama: bu katman saf Dart olduğu için sistemin
+/// paylaşım sayfasını tanımıyor. `main()` gerçek uygulamayı
+/// (`PlatformShareService`) enjekte ediyor.
+final shareServiceProvider = Provider<ShareService>((ref) {
+  return RecordingShareService();
 });
 
 /// Oyunun rastgele sayı üreteci.

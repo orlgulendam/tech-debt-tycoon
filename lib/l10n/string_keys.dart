@@ -161,6 +161,11 @@ enum StringKey {
   gameOverCrisesLabel,
   gameOverCtoNoteLabel,
   gameOverRestartButton,
+  gameOverShareButton,
+  gameOverShareFailed,
+  gameOverScoreCardTitle,
+  gameOverShareSubject,
+  gameOverShareText,
 
   // --- CTO notları (oyun sonu değerlendirmesi) ---
   ctoNoteWonClean,
@@ -191,4 +196,25 @@ enum StringKey {
   commonNewGameConfirmBody,
   commonSettings,
   commonLanguage,
+
+  // --- Nasıl oynanır (yardım ekranı) ---
+  helpTitle,
+  helpGoalTitle,
+  helpGoalBody,
+  helpResourcesTitle,
+  helpBudgetBody,
+  helpValuationBody,
+  helpRevenueBody,
+  helpTechDebtBody,
+  helpMoraleBody,
+  helpActionsTitle,
+  helpActionsBody,
+  helpEventsTitle,
+  helpEventsBody,
+  helpHintsTitle,
+  helpHintsBody,
+  helpStrategyTitle,
+  helpStrategyBody,
+  helpLoseTitle,
+  helpLoseBody,
 }

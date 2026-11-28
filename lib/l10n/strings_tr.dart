@@ -188,6 +188,14 @@ const Map<StringKey, String> kStringsTr = {
   StringKey.gameOverCrisesLabel: 'Çözülen kriz',
   StringKey.gameOverCtoNoteLabel: 'CTO Notu',
   StringKey.gameOverRestartButton: 'Yeniden Dene',
+  StringKey.gameOverShareButton: 'Skorunu Paylaş',
+  StringKey.gameOverShareFailed: 'Paylaşım açılamadı.',
+  StringKey.gameOverScoreCardTitle: 'CTO Karnesi',
+  StringKey.gameOverShareSubject: 'Tech Debt Tycoon skorum',
+  StringKey.gameOverShareText:
+      'Tech Debt Tycoon\'da {weeks}. haftaya kadar dayandım, şirketi '
+      '{valuation} değerlemeye taşıdım ve {crises} krizi çözdüm. '
+      'Sen kaç hafta dayanırsın?',
 
   // --- CTO notları ---
   StringKey.ctoNoteWonClean:
@@ -228,4 +236,59 @@ const Map<StringKey, String> kStringsTr = {
   StringKey.commonNewGameConfirmBody: 'Mevcut oyun silinecek. Bu işlem geri alınamaz; tıpkı production\'daki o DELETE gibi.',
   StringKey.commonSettings: 'Ayarlar',
   StringKey.commonLanguage: 'Dil',
+
+  // --- Nasıl oynanır ---
+  StringKey.helpTitle: 'Nasıl Oynanır',
+  StringKey.helpGoalTitle: 'Amaç',
+  StringKey.helpGoalBody:
+      'Bir yazılım girişiminin CTO\'susun. Her hafta tek bir karar '
+      'veriyorsun. Şirket değerlemesini 1.000.000\$\'a çıkarırsan '
+      'kazanırsın. Dengeli oynarsan bu ortalama 27 hafta sürüyor.',
+  StringKey.helpResourcesTitle: 'Beş kaynak',
+  StringKey.helpBudgetBody:
+      'Kasandaki nakit. Her hafta gelir girer, maaşlar çıkar. 0\$\'a '
+      'düşerse iflas edersin. "Net Nakit Akışı" satırı en çok gözden '
+      'kaçan sayıdır: negatifse her hafta para kaybediyorsun.',
+  StringKey.helpValuationBody:
+      'Şirketin değeri; hedef bu. Ana büyüme kaynağı tek tek aksiyonlar '
+      'değil, gelirin kendisi: her hafta değerleme, haftalık gelirinin '
+      'bir katı kadar büyür. Bu büyümeyi teknik borç ve moral kısar.',
+  StringKey.helpRevenueBody:
+      'Ürünün her hafta kazandırdığı para. Aksiyonlarla ve işe alımlarla '
+      'büyür. Geliri büyütmek, değerlemeyi büyütmenin en sağlam yoludur.',
+  StringKey.helpTechDebtBody:
+      'Kod kalitesi açığı. %60 üstünde gelirini yemeye başlar ve ekip '
+      'moral kaybeder, %80 üstünde kayıp ikiye katlanır, %100\'de '
+      'sunucular yanar. En önemlisi: hiçbir şey yapmasan bile her hafta '
+      'kendiliğinden artar ve bu artış oyun ilerledikçe hızlanır.',
+  StringKey.helpMoraleBody:
+      'Ekibin hâli. %70 altında hem nakit girişin hem değerleme büyümen '
+      'azalır; %0\'a düşerse ekip toplu istifa eder. Yani çoğunlukla bir '
+      'ölüm koşulundan çok bir verimlilik vergisidir.',
+  StringKey.helpActionsTitle: 'Haftalık aksiyonlar',
+  StringKey.helpActionsBody:
+      'Her hafta tek bir aksiyon seçersin ve etkileri kartın üstünde '
+      'yazılıdır. Altın kural: sadece "Hızlı Feature Çıkar" oynayan '
+      'oyuncu her zaman kaybeder — teknik borç er geç sunucuları yakar. '
+      'İki feature sonrası bir refactoring iyi bir ritimdir.',
+  StringKey.helpEventsTitle: 'Olay kartları',
+  StringKey.helpEventsBody:
+      'Hafta kapanınca bir olay çıkabilir; teknik borcun yüksekse daha '
+      'sık çıkar. Her seçeneğin bedeli önceden görünür, bedava doğru '
+      'cevap yoktur. Bazı seçenekler krizi çözmüş sayılır ve skoruna '
+      'yazılır.',
+  StringKey.helpHintsTitle: 'Danışman',
+  StringKey.helpHintsBody:
+      'Danışman o anki en kritik sorununu söyler ve önerdiği aksiyonu '
+      'yeşil çerçeveyle vurgular. Her oyunda 3 ücretsiz hakkın var; hak '
+      'paneli açtığında değil "Danışmana sor"a bastığında harcanır.',
+  StringKey.helpStrategyTitle: 'Kazanmak için',
+  StringKey.helpStrategyBody:
+      'Erken işe al, geliri büyüt, teknik borcu %60 altında ve morali '
+      '%70 üstünde tut, net nakit akışına bak ve oyalanma — borcun '
+      'doğal artışı zamanla hızlandığı için uzayan oyun giderek zorlaşır.',
+  StringKey.helpLoseTitle: 'Üç kaybetme yolu',
+  StringKey.helpLoseBody:
+      'Bütçe 0\$ (iflas), teknik borç %100 (sunucular yandı) ya da ekip '
+      'morali %0 (toplu istifa).',
 };

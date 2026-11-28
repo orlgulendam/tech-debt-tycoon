@@ -22,7 +22,18 @@ Geliştirme aşamalı yürüyor:
 - [x] **Aşama 1** — İskelet, bağımlılıklar, veri modelleri ve statik veri
 - [x] **Aşama 2** — Oyun motoru, Riverpod durum yönetimi, ipucu algoritması, otomatik kayıt, sahte reklam
 - [x] **Aşama 3** — Tema, navigasyon, ekranlar, onboarding, bottom sheet bileşenleri
-- [ ] **Aşama 4** — Haptic feedback, skor kartı, mağaza yayın hazırlığı
+- [x] **Aşama 4** — Haptic feedback, skor kartı, mağaza yayın hazırlığı
+
+## Belgeler
+
+| Belge | İçerik |
+| --- | --- |
+| [Kullanım Kılavuzu](docs/KULLANIM_KILAVUZU.md) | Oyunun tam kuralları, kaynaklar, strateji |
+| [Mağaza Yayın Hazırlığı](docs/MAGAZA_YAYIN.md) | İmzalama, ikon, kontrol listesi |
+| [Mağaza Metinleri](docs/MAGAZA_METINLERI.md) | Play/App Store listeleme metinleri |
+| [Gizlilik Politikası](docs/GIZLILIK.md) | Veri toplanmıyor |
+
+Kılavuzun oyun içi sürümü de var: uygulamada sağ üstteki **?** simgesi.
 
 ## Geliştirme ortamı kurulumu
 
@@ -67,7 +78,7 @@ Testler iki gruba ayrılıyor:
 | Komut | Kapsam | Adet |
 | --- | --- | --- |
 | `dart test` | Saf Dart: modeller, statik veri, oyun motoru, ipucu algoritması, kayıt servisi, Riverpod provider'ları | 217 |
-| `flutter test` | Yukarıdakilerin hepsi + widget testleri | 237 |
+| `flutter test` | Yukarıdakilerin hepsi + widget testleri | 243 |
 
 Model, motor, servis ve **provider** katmanlarının hiçbiri Flutter'a bağımlı
 değil, bu yüzden oyunun bütün mantığı motor başlatılmadan koşuyor — CI'da
@@ -87,7 +98,7 @@ lib/
 ├── providers/   # Riverpod provider'ları (saf Dart)
 ├── services/    # Oyun motoru, kayıt, ipucu, reklam servisleri
 ├── theme/       # Renkler, tipografi, ikon eşlemesi
-├── screens/     # Ofis, Ekip, Sözlük, Log, onboarding, kabuk
+├── screens/     # Ofis, Ekip, Sözlük, Log, onboarding, yardım, kabuk
 ├── widgets/     # Yeniden kullanılabilir bileşenler + bottom sheet'ler
 ├── l10n/        # Merkezi metin yönetimi
 └── main.dart
@@ -104,9 +115,12 @@ test/
     └── app_smoke_test.dart    # uygulama gerçekten ayağa kalkıyor mu
 tool/
 ├── setup_flutter.sh
-└── balance_sim.dart           # oyun dengesi simülatörü (ölçüm aracı)
+├── balance_sim.dart           # oyun dengesi simülatörü (ölçüm aracı)
+└── make_icon.py               # uygulama ikonunu üretir
 assets/
-└── fonts/                     # JetBrains Mono (gömülü, çevrimdışı)
+├── fonts/                     # JetBrains Mono (gömülü, çevrimdışı)
+└── icon/                      # mağaza listelemesi için ikon
+docs/                          # kılavuz, mağaza ve gizlilik belgeleri
 ```
 
 ### Mimari kararlar
@@ -170,4 +184,4 @@ Bütün ayar düğmeleri tek dosyada: `lib/data/game_balance.dart`.
 | İşe alım seçeneği | 4 (Junior, Mid, Senior, DevOps) |
 | Olay kartı | 14 (41 seçenek) |
 | Sözlük terimi | 17 |
-| Metin anahtarı | 136 |
+| Metin anahtarı | 171 |

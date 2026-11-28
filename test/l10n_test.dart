@@ -55,7 +55,16 @@ void main() {
     test('placeholder içeren metinlerin anahtarı doldurulmamış bırakılmaz', () {
       // Süslü parantez içeren her metin için en az bir doldurma yolu olmalı;
       // burada sadece bilinen placeholder adlarını kullandığımızı doğruluyoruz.
-      const known = {'week', 'count', 'name', 'weeks', 'remaining', 'value'};
+      const known = {
+        'week',
+        'count',
+        'name',
+        'weeks',
+        'remaining',
+        'value',
+        'valuation',
+        'crises',
+      };
       final pattern = RegExp(r'\{(\w+)\}');
       for (final key in StringKey.values) {
         for (final match in pattern.allMatches(strings[key])) {

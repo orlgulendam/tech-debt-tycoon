@@ -47,6 +47,7 @@ class HireSheet extends ConsumerWidget {
   }
 
   void _hire(BuildContext context, WidgetRef ref, Employee candidate) {
+    ref.read(hapticsProvider).success();
     final result = ref
         .read(gameControllerProvider.notifier)
         .playSprint(kHireAction, hire: candidate);

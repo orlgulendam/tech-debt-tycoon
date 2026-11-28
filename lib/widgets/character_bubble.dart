@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models/models.dart';
 import '../theme/theme.dart';
+import 'typewriter_text.dart';
 
 /// Bir karakterin konuşma balonu.
 ///
@@ -15,6 +16,7 @@ class CharacterBubble extends StatelessWidget {
     super.key,
     this.accentColor,
     this.dense = false,
+    this.animate = true,
   });
 
   /// Konuşan karakter. `null` ise anlatıcı konuşuyor sayılır.
@@ -28,6 +30,9 @@ class CharacterBubble extends StatelessWidget {
 
   /// `true` ise daha sıkışık yerleşim (bottom sheet içi).
   final bool dense;
+
+  /// Replik daktilo efektiyle yazılsın mı?
+  final bool animate;
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +82,9 @@ class CharacterBubble extends StatelessWidget {
                   ],
                 ),
               if (character != null) const SizedBox(height: AppDimens.gapXs),
-              Text(
+              TypewriterText(
                 line,
+                enabled: animate,
                 style: dense ? textTheme.bodySmall : textTheme.bodyMedium,
               ),
             ],

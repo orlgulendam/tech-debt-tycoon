@@ -6,6 +6,7 @@ import '../models/models.dart';
 import '../providers/providers.dart';
 import '../theme/theme.dart';
 import 'character_bubble.dart';
+import 'pulse.dart';
 import 'section_label.dart';
 
 /// Oyun sonu kartı: skor özeti ve kapanış repliği.
@@ -16,19 +17,57 @@ import 'section_label.dart';
 /// yolu yeni oyun başlatmak.
 ///
 /// Zengin skor kartı (paylaşılabilir görsel) Aşama 4'te gelecek.
-class GameOverCard extends ConsumerWidget {
+class GameOverCard extends ConsumerStatefulWidget {
   const GameOverCard({required this.state, super.key});
 
   /// Bitmiş oyunun durumu.
   final GameState state;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GameOverCard> createState() => _GameOverCardState();
+}
+
+class _GameOverCardState extends ConsumerState<GameOverCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: AppMotion.celebrate,
+  )..forward();
+
+  GameState get state => widget.state;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final won = state.status == GameStatus.won;
+    final accent = won ? AppColors.good : AppColors.danger;
+
+    // Kazanınca kart hafifçe büyüyerek ve parlayarak geliyor; kaybedince
+    // sadece beliriyor. Kutlama ile başsağlığı aynı animasyonla
+    // sunulmamalı.
+    final entrance = CurvedAnimation(
+      parent: _controller,
+      curve: won ? AppMotion.emphasis : AppMotion.enter,
+    );
+
+    return ScaleTransition(
+      scale: Tween<double>(begin: won ? 0.88 : 0.98, end: 1).animate(entrance),
+      child: FadeTransition(
+        opacity: CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+        child: _buildCard(context, won, accent),
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, bool won, Color accent) {
     final strings = ref.watch(stringsProvider);
     final characters = ref.watch(contentProvider).characters;
     final textTheme = Theme.of(context).textTheme;
-    final won = state.status == GameStatus.won;
-    final accent = won ? AppColors.good : AppColors.danger;
 
     return Card(
       shape: RoundedRectangleBorder(
@@ -42,10 +81,14 @@ class GameOverCard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  won ? AppIcons.unicorn : Icons.dangerous_outlined,
-                  color: accent,
-                  size: AppDimens.iconMd,
+                Pulse(
+                  active: won,
+                  minOpacity: 0.55,
+                  child: Icon(
+                    won ? AppIcons.unicorn : Icons.dangerous_outlined,
+                    color: accent,
+                    size: AppDimens.iconMd,
+                  ),
                 ),
                 const SizedBox(width: AppDimens.gapSm),
                 Expanded(
@@ -90,8 +133,10 @@ class GameOverCard extends ConsumerWidget {
             ),
             const SizedBox(height: AppDimens.gapLg),
             FilledButton.icon(
-              onPressed: () =>
-                  ref.read(gameControllerProvider.notifier).startNewGame(),
+              onPressed: () {
+                ref.read(hapticsProvider).selection();
+                ref.read(gameControllerProvider.notifier).startNewGame();
+              },
               icon: const Icon(AppIcons.newGame, size: AppDimens.iconSm),
               label: Text(strings[StringKey.gameOverRestartButton]),
             ),

@@ -5,6 +5,7 @@ import '../l10n/l10n.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../theme/theme.dart';
+import 'animated_counter.dart';
 
 /// Unicorn hedefine ilerleme çubuğu.
 ///
@@ -34,11 +35,10 @@ class UnicornProgress extends ConsumerWidget {
             ),
             const SizedBox(width: AppDimens.gapXs),
             Expanded(
-              child: Text(
-                formatMoney(state.valuation),
-                style: textTheme.titleMedium?.copyWith(
-                  fontFeatures: AppTypography.tabularFigures,
-                ),
+              child: AnimatedCounter(
+                value: state.valuation,
+                format: formatMoney,
+                style: textTheme.titleMedium,
               ),
             ),
             Text(
@@ -54,11 +54,18 @@ class UnicornProgress extends ConsumerWidget {
         const SizedBox(height: AppDimens.gapSm),
         ClipRRect(
           borderRadius: BorderRadius.circular(AppDimens.progressHeight / 2),
-          child: LinearProgressIndicator(
-            value: state.unicornProgress,
-            color: AppColors.good,
-            backgroundColor: AppColors.surfaceAlt,
-            minHeight: AppDimens.progressHeight,
+          // İlerleme çubuğu da hedefe doğru akarak gidiyor; birden
+          // sıçraması kazanılan mesafeyi görünmez kılıyordu.
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0, end: state.unicornProgress),
+            duration: AppMotion.counter,
+            curve: AppMotion.enter,
+            builder: (context, value, _) => LinearProgressIndicator(
+              value: value,
+              color: AppColors.good,
+              backgroundColor: AppColors.surfaceAlt,
+              minHeight: AppDimens.progressHeight,
+            ),
           ),
         ),
       ],

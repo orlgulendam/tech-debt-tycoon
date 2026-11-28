@@ -104,6 +104,19 @@ const Map<StringKey, String> kStringsTr = {
   StringKey.adFailed: 'Reklam yüklenemedi. Belki de evren sana iyilik yapıyor.',
   StringKey.adCancel: 'Vazgeç',
 
+  // --- Sprint sonucu ---
+  StringKey.sprintResultTitle: 'Hafta {week} kapandı',
+  StringKey.sprintResultActionLabel: 'Bu hafta ne yaptın',
+  StringKey.sprintResultRevenue: 'Gelir tahsilatı',
+  StringKey.sprintResultValuationGrowth: 'Değerleme büyümesi',
+  StringKey.sprintResultActionEffect: 'Aksiyonun etkisi',
+  StringKey.sprintResultTeamEffect: 'Ekibin etkisi',
+  StringKey.sprintResultDebtDrift: 'Kod çürümesi',
+  StringKey.sprintResultHired: '{name} ekibe katıldı',
+  StringKey.sprintResultEventIncoming: 'Bir şeyler oluyor...',
+  StringKey.sprintResultCalmWeek: 'Sakin bir hafta. Tadını çıkar.',
+  StringKey.sprintResultContinue: 'Sonraki Hafta',
+
   // --- Olay kartları ---
   StringKey.eventSheetTitle: 'Beklenmedik Gelişme',
   StringKey.eventChooseOption: 'Karar senin:',

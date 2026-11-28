@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../models/models.dart';
 import '../theme/theme.dart';
 import 'effect_summary.dart';
+import 'pulse.dart';
 
 /// Haftalık aksiyon kartı.
 ///
@@ -18,6 +19,7 @@ class ActionCard extends StatelessWidget {
     this.cost,
     this.lockedReason,
     this.highlighted = false,
+    this.onLockedTap,
   });
 
   /// Gösterilecek aksiyon.
@@ -35,6 +37,12 @@ class ActionCard extends StatelessWidget {
   /// `true` ise kart vurgulanır (danışmanın önerdiği aksiyon).
   final bool highlighted;
 
+  /// Kart kilitliyken dokunulduğunda.
+  ///
+  /// Kilitli kart sessiz kalmasın: oyuncu dokunduğunda bir şey olmadığını
+  /// değil, **neden** olmadığını anlasın (titreşim + ekrandaki gerekçe).
+  final VoidCallback? onLockedTap;
+
   bool get _locked => lockedReason != null;
 
   @override
@@ -42,16 +50,15 @@ class ActionCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final accent = highlighted ? AppColors.good : AppColors.border;
 
-    return Opacity(
-      opacity: _locked ? 0.55 : 1,
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimens.radiusCard),
-          side: BorderSide(color: accent, width: highlighted ? 1.5 : 1),
-        ),
-        child: InkWell(
-          onTap: _locked ? null : onTap,
-          borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+    return PressableScale(
+      onTap: _locked ? onLockedTap : onTap,
+      child: Opacity(
+        opacity: _locked ? 0.55 : 1,
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+            side: BorderSide(color: accent, width: highlighted ? 1.5 : 1),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(AppDimens.cardPadding),
             child: Column(

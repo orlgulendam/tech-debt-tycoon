@@ -6,6 +6,7 @@ import '../models/models.dart';
 import '../providers/providers.dart';
 import '../theme/theme.dart';
 import 'metric_tile.dart';
+import 'pulse.dart';
 import 'stat_bar.dart';
 import 'unicorn_progress.dart';
 
@@ -40,6 +41,8 @@ class ResourceHeader extends ConsumerWidget {
                     icon: AppIcons.budget,
                     label: strings[StringKey.metricBudget],
                     value: formatMoney(state.budget),
+                    animatedValue: state.budget,
+                    format: formatMoney,
                     valueColor: AppColors.forBudget(state.budget),
                   ),
                 ),
@@ -48,6 +51,8 @@ class ResourceHeader extends ConsumerWidget {
                     icon: AppIcons.revenue,
                     label: strings[StringKey.metricWeeklyRevenueShort],
                     value: formatMoney(state.weeklyRevenue),
+                    animatedValue: state.weeklyRevenue,
+                    format: formatMoney,
                   ),
                 ),
                 Expanded(
@@ -83,21 +88,29 @@ class ResourceHeader extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppDimens.gapMd),
-            StatBar(
-              label: strings[StringKey.metricTechDebt],
-              value: state.techDebt,
-              color: AppColors.forTechDebt(state.techDebt),
-              icon: AppIcons.techDebt,
-              thresholdPercent: GameState.highTechDebtThreshold,
-              inverted: true,
+            // Kritik seviyede nabız atıyor: oyuncu ekrana bakmasa bile
+            // köşesinde bir şeyin yanıp söndüğünü fark etsin.
+            Pulse(
+              active: state.techDebt >= 80,
+              child: StatBar(
+                label: strings[StringKey.metricTechDebt],
+                value: state.techDebt,
+                color: AppColors.forTechDebt(state.techDebt),
+                icon: AppIcons.techDebt,
+                thresholdPercent: GameState.highTechDebtThreshold,
+                inverted: true,
+              ),
             ),
             const SizedBox(height: AppDimens.gapMd),
-            StatBar(
-              label: strings[StringKey.metricTeamMorale],
-              value: state.teamMorale,
-              color: AppColors.forMorale(state.teamMorale),
-              icon: AppIcons.morale,
-              thresholdPercent: GameState.lowMoraleThreshold,
+            Pulse(
+              active: state.isMoraleCritical,
+              child: StatBar(
+                label: strings[StringKey.metricTeamMorale],
+                value: state.teamMorale,
+                color: AppColors.forMorale(state.teamMorale),
+                icon: AppIcons.morale,
+                thresholdPercent: GameState.lowMoraleThreshold,
+              ),
             ),
           ],
         ),

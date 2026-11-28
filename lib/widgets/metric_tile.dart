@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../theme/theme.dart';
+import 'animated_counter.dart';
 
 /// Tek bir metriği gösteren küçük kutu.
 ///
@@ -14,6 +15,9 @@ class MetricTile extends StatelessWidget {
     super.key,
     this.valueColor,
     this.onTap,
+    this.animatedValue,
+    this.format,
+    this.inverted = false,
   });
 
   /// Metriğin ikonu.
@@ -30,6 +34,18 @@ class MetricTile extends StatelessWidget {
 
   /// Dokunulabilir yapmak için.
   final VoidCallback? onTap;
+
+  /// Verilirse sayı, değiştiğinde yeni değere sayarak geçer.
+  ///
+  /// [format] ile birlikte kullanılır; ikisi de verilmezse [value] düz
+  /// metin olarak gösterilir.
+  final int? animatedValue;
+
+  /// [animatedValue] için biçimlendirici.
+  final String Function(int)? format;
+
+  /// `true` ise artış kötüdür (parlama rengi ters çalışır).
+  final bool inverted;
 
   @override
   Widget build(BuildContext context) {
@@ -62,14 +78,23 @@ class MetricTile extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppDimens.gapXs),
-            Text(
-              value,
-              style: textTheme.titleMedium?.copyWith(
-                color: valueColor ?? AppColors.textPrimary,
-                fontFeatures: AppTypography.tabularFigures,
+            if (animatedValue != null && format != null)
+              AnimatedCounter(
+                value: animatedValue!,
+                format: format!,
+                inverted: inverted,
+                baseColor: valueColor ?? AppColors.textPrimary,
+                style: textTheme.titleMedium,
+              )
+            else
+              Text(
+                value,
+                style: textTheme.titleMedium?.copyWith(
+                  color: valueColor ?? AppColors.textPrimary,
+                  fontFeatures: AppTypography.tabularFigures,
+                ),
+                maxLines: 1,
               ),
-              maxLines: 1,
-            ),
           ],
         ),
       ),

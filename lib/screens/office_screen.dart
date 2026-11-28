@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -61,6 +63,7 @@ class OfficeScreen extends ConsumerWidget {
               cost: GameEngine.actionCost(action),
               lockedReason: _lockedReason(strings, state, action),
               onTap: () => _onAction(context, ref, action),
+              onLockedTap: () => ref.read(hapticsProvider).warning(),
             ),
             const SizedBox(height: AppDimens.gapMd),
           ],
@@ -85,26 +88,47 @@ class OfficeScreen extends ConsumerWidget {
 
   /// Aksiyona dokunulduğunda.
   ///
-  /// İşe alım önce aday seçimi sheet'i açar; diğerleri doğrudan sprint
-  /// oynatır. Her iki yolda da sprint sonunda olay kartı çıkmışsa karar
-  /// sheet'i açılır.
+  /// Haftanın ritmi: aksiyon → hafta kapanış özeti → (varsa) olay kartı.
+  /// Özet paneli bilinçli olarak araya giriyor; onsuz sayılar sessizce
+  /// değişiyor ve oyuncu neyin neden olduğunu göremiyordu.
+  ///
+  /// İşe alım önce aday seçimi sheet'i açar, sprint'i o oynatır.
   Future<void> _onAction(
     BuildContext context,
     WidgetRef ref,
     GameAction action,
   ) async {
     final controller = ref.read(gameControllerProvider.notifier);
+    final haptics = ref.read(hapticsProvider);
 
     final SprintResult? result;
     if (action.requiresHireSelection) {
       result = await showHireSheet(context);
     } else {
+      unawaited(haptics.selection());
       result = controller.playSprint(action);
     }
 
+    if (result == null || !context.mounted) return;
+
+    // Oyun bittiyse özet panel açmıyoruz: sonuç kartı zaten ekranda
+    // belirecek ve araya bir panel sokmak o anı bozar.
+    if (result.isGameOver) {
+      unawaited(
+        result.state.status == GameStatus.won
+            ? haptics.success()
+            : haptics.warning(),
+      );
+      return;
+    }
+
+    // Titreşimi beklemiyoruz: paneli açmayı geciktirmesin ve araya
+    // async boşluk girip context'i şüpheli hâle getirmesin.
+    unawaited(haptics.impact());
+    await showSprintResultSheet(context, result);
     if (!context.mounted) return;
 
-    final event = result?.triggeredEvent;
+    final event = result.triggeredEvent;
     if (event != null) {
       await showEventSheet(context, event);
     }

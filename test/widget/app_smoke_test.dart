@@ -44,7 +44,19 @@ void main() {
       storageServiceProvider.overrideWithValue(storage),
       randomProvider.overrideWithValue(noEvents),
     ],
-    child: const TechDebtTycoonApp(),
+    // Hareket azaltma açık: sonsuz nabız animasyonları pumpAndSettle'ı
+    // kilitlemesin ve daktilo efekti metni hemen tam göstersin.
+    //
+    // MediaQueryData gerçek görünümden türetiliyor; sıfırdan kurulan bir
+    // MediaQueryData ekran boyutunu 0x0 yapıyor ve dokunmalar hedefi
+    // bulamıyor.
+    child: Builder(
+      builder: (context) => MediaQuery(
+        data: MediaQueryData.fromView(View.of(context))
+            .copyWith(disableAnimations: true),
+        child: const TechDebtTycoonApp(),
+      ),
+    ),
   );
 
   /// Alt navigasyon çubuğundaki sekme etiketini bulur.
@@ -141,6 +153,59 @@ void main() {
       expect(find.text('Hafta 2'), findsOneWidget);
       expect(storage.saveCount, 1);
       expect(storage.loadGameState()!.week, 2);
+    });
+
+    testWidgets('sprint sonunda hafta kapanış özeti gösterilir', (
+      tester,
+    ) async {
+      useTallPhone(tester);
+      await tester.pumpWidget(app(readyStorage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(kRefactorAction.name));
+      await tester.pumpAndSettle();
+
+      // Kapanan hafta 1'di; özet onu söylemeli.
+      expect(find.text('Hafta 1 kapandı'), findsOneWidget);
+      expect(find.text(strings[StringKey.sprintResultRevenue]), findsOneWidget);
+      expect(
+        find.text(strings[StringKey.sprintResultValuationGrowth]),
+        findsOneWidget,
+      );
+      // Olay çıkmadığı için sakin hafta mesajı görünmeli.
+      expect(
+        find.text(strings[StringKey.sprintResultCalmWeek]),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text(strings[StringKey.sprintResultContinue]));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hafta 1 kapandı'), findsNothing);
+      expect(find.text(kRefactorAction.name), findsOneWidget);
+    });
+
+    testWidgets('oyun biterse kapanış özeti yerine sonuç kartı gelir', (
+      tester,
+    ) async {
+      useTallPhone(tester);
+      await tester.pumpWidget(
+        app(
+          readyStorage(
+            gameState: GameState.newGame().copyWith(
+              week: 20,
+              valuation: 999000,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(kShipFeatureAction.name));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('kapandı'), findsNothing);
+      expect(find.text(strings[StringKey.gameOverWonTitle]), findsOneWidget);
     });
 
     testWidgets('bütçe yetmeyen aksiyon kilitli görünür', (tester) async {

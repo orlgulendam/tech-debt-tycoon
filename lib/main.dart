@@ -7,6 +7,7 @@ import 'providers/providers.dart';
 import 'screens/home_shell.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/hive_storage_service.dart';
+import 'services/platform_haptics_service.dart';
 import 'services/storage_service.dart';
 import 'theme/theme.dart';
 
@@ -29,7 +30,10 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
-      overrides: [storageServiceProvider.overrideWithValue(storage)],
+      overrides: [
+        storageServiceProvider.overrideWithValue(storage),
+        hapticsProvider.overrideWithValue(const PlatformHapticsService()),
+      ],
       child: const TechDebtTycoonApp(),
     ),
   );

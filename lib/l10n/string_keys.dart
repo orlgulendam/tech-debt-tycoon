@@ -81,6 +81,19 @@ enum StringKey {
   adFailed,
   adCancel,
 
+  // --- Sprint sonucu ---
+  sprintResultTitle,
+  sprintResultActionLabel,
+  sprintResultRevenue,
+  sprintResultValuationGrowth,
+  sprintResultActionEffect,
+  sprintResultTeamEffect,
+  sprintResultDebtDrift,
+  sprintResultHired,
+  sprintResultEventIncoming,
+  sprintResultCalmWeek,
+  sprintResultContinue,
+
   // --- Olay kartları ---
   eventSheetTitle,
   eventChooseOption,

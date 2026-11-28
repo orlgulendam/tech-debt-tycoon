@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -135,11 +137,16 @@ class _EventSheetState extends ConsumerState<EventSheet> {
     ];
   }
 
-  void _choose(EventChoice choice) {
+  Future<void> _choose(EventChoice choice) async {
+    final haptics = ref.read(hapticsProvider);
     final resolution = ref
         .read(gameControllerProvider.notifier)
         .resolveEvent(choice);
-    if (resolution != null) setState(() => _resolution = resolution);
+    if (resolution == null) return;
+
+    setState(() => _resolution = resolution);
+    // Krizi çözen seçim ödül gibi hissettirsin, çözmeyen uyarı gibi.
+    await (resolution.resolvedCrisis ? haptics.success() : haptics.impact());
   }
 
   Character? _characterById(List<Character> characters, String id) {

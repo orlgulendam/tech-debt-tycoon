@@ -71,7 +71,7 @@ class TeamScreen extends ConsumerWidget {
           FilledButton.icon(
             onPressed: state.hasPendingEvent
                 ? null
-                : () => _openHireSheet(context),
+                : () => _openHireSheet(context, ref),
             icon: const Icon(Icons.person_add_alt, size: AppDimens.iconSm),
             label: Text(strings[StringKey.teamHireButton]),
           ),
@@ -80,12 +80,20 @@ class TeamScreen extends ConsumerWidget {
     );
   }
 
-  /// İşe alım sheet'ini açar; sprint sonunda olay çıkarsa onu da gösterir.
-  Future<void> _openHireSheet(BuildContext context) async {
+  /// İşe alım sheet'ini açar.
+  ///
+  /// Ofisteki akışın aynısı: işe alım da bir sprint oynatıyor, dolayısıyla
+  /// hafta kapanış özeti ve (varsa) olay kartı burada da gösterilmeli.
+  Future<void> _openHireSheet(BuildContext context, WidgetRef ref) async {
     final result = await showHireSheet(context);
-    if (!context.mounted) return;
+    if (result == null || !context.mounted) return;
 
-    final event = result?.triggeredEvent;
+    if (!result.isGameOver) {
+      await showSprintResultSheet(context, result);
+      if (!context.mounted) return;
+    }
+
+    final event = result.triggeredEvent;
     if (event != null) {
       await showEventSheet(context, event);
     }

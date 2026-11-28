@@ -87,7 +87,11 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onDestinationSelected: (index) => setState(() => _index = index),
+        onDestinationSelected: (index) {
+          if (index == _index) return;
+          ref.read(hapticsProvider).selection();
+          setState(() => _index = index);
+        },
         destinations: [
           NavigationDestination(
             icon: const Icon(AppIcons.navOffice),

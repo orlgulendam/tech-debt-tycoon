@@ -5,6 +5,7 @@ import 'package:riverpod/riverpod.dart';
 import '../data/game_content.dart';
 import '../l10n/l10n.dart';
 import '../services/ad_service.dart';
+import '../services/haptics_service.dart';
 import '../services/hint_service.dart';
 import '../services/storage_service.dart';
 
@@ -64,6 +65,16 @@ final hintServiceProvider = Provider<HintService>((ref) {
 /// bir ağ takılacak.
 final adServiceProvider = Provider<AdService>((ref) {
   return FakeAdService(random: ref.watch(randomProvider));
+});
+
+/// Dokunsal geri bildirim.
+///
+/// Varsayılan sessiz: bu katman saf Dart olduğu için platformun titreşim
+/// motorunu tanımıyor. `main()` gerçek uygulamayı (
+/// `PlatformHapticsService`) enjekte ediyor; testler varsayılanı olduğu
+/// gibi kullanıyor.
+final hapticsProvider = Provider<HapticsService>((ref) {
+  return const NoopHapticsService();
 });
 
 /// Oyunun rastgele sayı üreteci.

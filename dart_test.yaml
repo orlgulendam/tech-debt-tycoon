@@ -1,0 +1,26 @@
+# `dart test` yapilandirmasi.
+#
+# Projenin testleri iki gruba ayriliyor:
+#
+#   test/*.dart        Saf Dart: modeller, statik veri, oyun motoru, ipucu
+#                      algoritmasi, kayit servisi ve Riverpod provider'lari.
+#                      Flutter motoru baslatilmadan kosar, bu yuzden hizli.
+#
+#   test/widget/       Flutter gerektiren widget testleri. Yalnizca
+#                      `flutter test` ile kosar.
+#
+# `dart test` varsayilan olarak test/ altindaki her seyi toplayacagi ve
+# widget testleri `flutter_test`'i import ettigi icin derlenemeyecekti.
+# Asagidaki ayar varsayilan kosuyu saf Dart testlerine daraltiyor.
+#
+# `flutter test` bu dosyayi dikkate almaz; o butun testleri (widget dahil)
+# kosar.
+paths:
+  - test/models_test.dart
+  - test/data_integrity_test.dart
+  - test/l10n_test.dart
+  - test/game_engine_test.dart
+  - test/hint_service_test.dart
+  - test/storage_service_test.dart
+  - test/ad_service_test.dart
+  - test/game_provider_test.dart

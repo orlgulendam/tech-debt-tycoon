@@ -1,0 +1,83 @@
+name: tech_debt_tycoon
+description: "Tech Debt Tycoon - bir yazılım girişimi simülasyonu"
+# Paket pub.dev'e yayınlanmayacak; bu satır kazara `pub publish` çağrısını engeller.
+publish_to: 'none'
+
+# Sürüm numarası: <sürüm adı>+<derleme numarası>
+# Android'de versionName+versionCode, iOS'ta CFBundleShortVersionString+CFBundleVersion olarak kullanılır.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Flutter 3.50 şablonunun getirdiği Material bileşen paketi.
+  material_ui: ^1.11.1
+
+  # iOS tarzı ikonlar (platforma özel ufak dokunuşlar için).
+  cupertino_icons: ^1.0.9
+
+  # Durum yönetimi.
+  #
+  # İki paket bilinçli olarak ayrı: `lib/providers/` saf Dart `riverpod`
+  # kullanıyor (Flutter importu yok), yalnızca widget'lar
+  # `flutter_riverpod`'a dokunuyor. Böylece bütün provider ve oyun mantığı
+  # `dart test` ile motor başlatılmadan test edilebiliyor.
+  riverpod: ^3.5.0
+  flutter_riverpod: ^3.5.0
+
+  # Yerel kalıcı kayıt (tamamen çevrimdışı).
+  #
+  # NOT - Neden `hive_generator` yok:
+  # Kayıtlı modelleri (GameState / GameRecord) Hive'ın ürettiği ikili
+  # TypeAdapter'lar yerine Hive kutusunda **JSON map** olarak saklıyoruz.
+  # Gerekçe:
+  #  1. `hive_generator` 2.0.1 `analyzer` sürümünü 6.4.1'e, `build_runner`'ı
+  #     2.4.13'e çiviliyor. Dart 3.14 ise analyzer 14.x ile geliyor. Bu da
+  #     bütün proje ömrü boyunca araç zincirini iki ana sürüm geride tutuyordu
+  #     (denendi ve ölçüldü; generator çalışıyor ama bu bedelle).
+  #  2. JSON ile modeller saf Dart kalıyor: `part`/`.g.dart` dosyası ve kod
+  #     üretme adımı yok, `dart test` Flutter motoru açılmadan koşuyor.
+  #  3. Kaydedilen veri tek bir küçük nesne; ikili formatın hız/boyut kazancı
+  #     ölçülemeyecek kadar küçük. Karşılığında `typeId` yönetimi ve aşamalar
+  #     arası şema göçü derdi kalkıyor (modelde `schemaVersion` alanı var).
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  share_plus: ^13.3.1
+  path_provider: ^2.1.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Önerilen lint kuralları; `analysis_options.yaml` üzerinden etkin.
+  flutter_lints: ^6.0.0
+
+  # Kod üretimi altyapısı. Aşama 1'de aktif bir builder yok; Aşama 2'de
+  # `riverpod_generator` eklenmek istenirse hazır dursun diye tutuluyor.
+  build_runner: ^2.17.1
+
+  # Saf Dart test koşucusu. Modeller ve statik veri Flutter'a bağımlı
+  # olmadığı için testler `dart test` ile de koşabiliyor (motor başlatmaya
+  # gerek yok, CI'da daha hızlı). `flutter test` de aynı testleri koşar.
+  test: ^1.32.0
+
+flutter:
+  uses-material-design: true
+
+  # JetBrains Mono, uygulamaya gömülü.
+  #
+  # Oyun tamamen çevrimdışı çalışmak zorunda. Font Flutter'ın standart
+  # `fonts:` bildirimiyle gömülüyor; çalışma anında indirme yok, ağ yok.
+  fonts:
+    - family: JetBrains Mono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/JetBrainsMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/JetBrainsMono-Bold.ttf
+          weight: 700
